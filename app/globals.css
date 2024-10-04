@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #1a1a40; 
+  --foreground: #000000; 
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d0d26; 
+    --foreground: #000000; 
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Georgia', serif; 
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .carousel-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain; 
+  }
+  
+  .product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.carousel-button {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  padding: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-button:hover {
+  opacity: 1;
+}
