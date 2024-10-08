@@ -1,41 +1,44 @@
-"use client"
+import React from 'react';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-export default function Pagination({ currentPage, searchQuery, selectedCategory, sortOrder }) {
+const Pagination = ({ currentPage, totalProducts, limitValue, onPageChange }) => {
+  const totalPages = Math.ceil(totalProducts / limitValue); 
   
-  
-  const prevPage = currentPage > 1 ? currentPage - 1 : null;
-  const nextPage = currentPage + 1;
-  const router = useRouter();
-
-  const buildPageLink = (page) => {
-    const query = {
-      ...router.query,
-      page,
-      search: searchQuery || undefined,
-      category: selectedCategory || undefined,
-      sort: sortOrder || undefined,
-    };
-
-    return {
-      pathname: '/products',
-      query,
-    };
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      onPageChange(newPage);
+    }
   };
 
   return (
-    <div className="flex justify-between items-center mt-8">
-      {prevPage && (
-        <Link href={buildPageLink(prevPage)} className="bg-gray-300 px-4 py-2 rounded">
-          Previous
-        </Link>
-      )}
-      <span className="text-gray-700">Page {currentPage}</span>
-      <Link href={buildPageLink(nextPage)} className="bg-gray-300 px-4 py-2 rounded">
+    <div className="flex justify-center items-center space-x-2 mt-4">
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1} 
+        className={`px-4 py-2 ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+      >
+        Previous
+      </button>
+
+   
+      {Array.from({ length: totalPages }, (_, index) => (
+        <button
+          key={index + 1}
+          onClick={() => handlePageChange(index + 1)}
+          className={`px-4 py-2 ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          {index + 1}
+        </button>
+      ))}
+
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages} 
+        className={`px-4 py-2 ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+      >
         Next
-      </Link>
+      </button>
     </div>
   );
-}
+};
+
+export default Pagination;
