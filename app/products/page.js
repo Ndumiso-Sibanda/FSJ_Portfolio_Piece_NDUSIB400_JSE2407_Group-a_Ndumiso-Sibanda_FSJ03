@@ -2,114 +2,104 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
+import { collection, query, where, getDocs, orderBy, limit, startAt } from 'firebase/firestore';
+import { db } from '../../firebase';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../components/Pagination';
 import Spinner from '../components/Spinner'; 
 import SortSelect from '../components/SortSelect'; 
 
-const API_URL = 'https://next-ecommerce-api.vercel.app/products';
 
 const categories = [
-  "beauty",
-  "fragrances",
-  "furniture",
-  "groceries",
-  "home-decoration",
-  "kitchen-accessories",
-  "laptops",
-  "mens-shirts",
-  "mens-shoes",
-  "mens-watches",
-  "mobile-accessories",
-  "motorcycle",
-  "skin-care",
-  "smartphones",
-  "sports-accessories",
-  "sunglasses",
-  "tablets",
-  "tops",
-  "vehicle",
-  "womens-bags",
-  "womens-dresses",
-  "womens-jewellery",
-  "womens-shoes",
-  "womens-watches"
+  "beauty", "fragrances", "furniture", "groceries", "home-decoration", 
+  "kitchen-accessories", "laptops", "mens-shirts", "mens-shoes", "mens-watches", 
+  "mobile-accessories", "motorcycle", "skin-care", "smartphones", "sports-accessories", 
+  "sunglasses", "tablets", "tops", "vehicle", "womens-bags", "womens-dresses", 
+  "womens-jewellery", "womens-shoes", "womens-watches"
 ];
 
+const PAGE_SIZE = 20; 
 
-async function fetchProducts({ search = '', category = '', page = 1, limit = 20 }) {
+async function fetchProducts({ search = '', category = '', page = 1, limitValue = PAGE_SIZE, sortOrder = '' }) {
   try {
-    const query = new URLSearchParams({
-      search,
-      category,
-      skip: (page - 1) * limit,
-      limit,
-    });
+    const productRef = collection(db, 'products'); 
 
-    const fetchUrl = `${API_URL}?${query.toString()}`;
-    console.log('Fetching URL:', fetchUrl); 
-
-    const res = await fetch(fetchUrl);
-
-    if (!res.ok) {
-      const errorMessage = await res.text();
-      console.error('API Response Error:', errorMessage); 
-      throw new Error(`Failed to fetch products: ${res.status} - ${errorMessage}`);
-    }
     
-    return res.json();
+    let q = query(productRef);
+
+    
+    if (category) {
+      q = query(q, where('category', '==', category));
+    }
+
+    
+    if (search) {
+      q = query(q, where('name', '>=', search), where('name', '<=', search + '\uf8ff'));
+    }
+
+    
+    if (sortOrder === 'price-asc') {
+      q = query(q, orderBy('price', 'asc'));
+    } else if (sortOrder === 'price-desc') {
+      q = query(q, orderBy('price', 'desc'));
+    }
+
+   
+    const offset = (page - 1) * limitValue;
+    q = query(q, orderBy('id'), limit(limitValue), startAt(offset)); 
+
+    const productDocs = await getDocs(q);
+    const products = productDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    return products; 
   } catch (error) {
-    console.error('Fetch Error:', error.message);
-    throw new Error(error.message);
+    console.error('Firebase Fetch Error:', error.message);
+    throw new Error('Failed to fetch products');
   }
 }
 
 export default function ProductsPage({ searchParams }) {
   const router = useRouter();
   const [page, setPage] = useState(Number(searchParams.page) || 1);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.search || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.category || '');
-  const [sortOrder, setSortOrder] = useState(searchParams.sort || ''); 
+  const [sortOrder, setSortOrder] = useState(''); 
+  const [totalProducts, setTotalProducts] = useState(194); 
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const fetchedProducts = await fetchProducts({
-          search: searchQuery,
-          category: selectedCategory,
-          page,
-        });
-
-       
-        let sortedProducts = [...fetchedProducts];
-        if (sortOrder === 'price-asc') {
-          sortedProducts = sortedProducts.sort((a, b) => a.price - b.price);
-        } else if (sortOrder === 'price-desc') {
-          sortedProducts = sortedProducts.sort((a, b) => b.price - a.price);
-        }
-
-        setProducts(sortedProducts || []);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, [searchQuery, selectedCategory, sortOrder, page]);
-
-  const updateUrl = () => {
-    router.push(`/products?search=${searchQuery || ''}&category=${selectedCategory || ''}&sort=${sortOrder}&page=${page}`);
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const fetchedProducts = await fetchProducts({
+        search: searchQuery,
+        category: selectedCategory,
+        page,
+        limitValue: PAGE_SIZE, 
+        sortOrder,
+      });
+  
+      console.log("Fetched Products:", fetchedProducts); 
+      setProducts(fetchedProducts); 
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    updateUrl();
+    loadProducts(); 
+  }, [searchQuery, selectedCategory, sortOrder, page]);
+
+  const updateUrl = () => {
+    router.push(`/products?search=${searchQuery || ''}&category=${selectedCategory || ''}&sortby=${sortOrder}&page=${page}`);
+  };
+  
+  useEffect(() => {
+    updateUrl(); 
   }, [searchQuery, selectedCategory, sortOrder, page]);
 
   const handleSearch = (e) => {
@@ -139,17 +129,18 @@ export default function ProductsPage({ searchParams }) {
         placeholder="Search products..."
         className="w-full mb-4 p-2 border border-gray-300 rounded"
       />
-
+      
       <select value={selectedCategory} onChange={handleCategoryChange} className="mb-4 p-2 border border-gray-300 rounded">
         <option value="">All Categories</option>
-        {categories.map((category) => (
-          <option key={category} value={category}>
-            {category.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase())} 
-          </option>
-        ))}
+        {Array.isArray(categories) && categories.length > 0 && (
+          categories.map((category) => (
+            <option key={category} value={category}>
+              {category.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+            </option>
+          ))
+        )}
       </select>
 
-     
       <SortSelect sortOrder={sortOrder} onSortChange={handleSortChange} /> 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -158,7 +149,12 @@ export default function ProductsPage({ searchParams }) {
         ))}
       </div>
 
-      <Pagination currentPage={page} />
+      <Pagination 
+        currentPage={page} 
+        totalProducts={totalProducts} 
+        limitValue={PAGE_SIZE} 
+        onPageChange={setPage} 
+      />
     </div>
   );
 }
