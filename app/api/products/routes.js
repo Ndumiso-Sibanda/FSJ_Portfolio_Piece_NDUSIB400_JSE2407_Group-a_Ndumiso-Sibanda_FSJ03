@@ -1,17 +1,20 @@
 import { collection, getDocs } from "firebase/firestore";
-import { db } from '../../../firebase';
+import { db } from "../../firebase/firebase";
 
 async function fetchAllProducts() {
-  try {
-    const productRef = collection(db, 'products');
-    const productDocs = await getDocs(productRef);
-    const products = productDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+ try {
+  const productRef = collection(db, "products");
+  const productDocs = await getDocs(productRef);
+  const products = productDocs.docs.map((doc) => ({
+   id: doc.id,
+   ...doc.data(),
+  }));
 
-    return products;
-  } catch (error) {
-    console.error('Firebase Fetch Error:', error.message);
-    throw new Error('Failed to fetch products');
-  }
+  return products;
+ } catch (error) {
+  console.error("Firebase Fetch Error:", error.message);
+  throw new Error("Failed to fetch products");
+ }
 }
 
 export default fetchAllProducts;
