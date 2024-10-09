@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { collection, query, where, getDocs, orderBy, limit, startAt } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '@/firebase';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../components/Pagination';
 import Spinner from '../components/Spinner'; 
