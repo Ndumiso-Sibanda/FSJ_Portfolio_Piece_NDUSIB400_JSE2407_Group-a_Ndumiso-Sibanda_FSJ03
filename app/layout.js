@@ -1,6 +1,6 @@
 import "./globals.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCubes } from "@fortawesome/free-solid-svg-icons"; // Example icon
+import Link from 'next/link';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 export const metadata = {
   title: "Next.js E-commerce",
@@ -19,16 +19,24 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="bg-gray-100">
-        <header className="bg-gray-200 shadow-p4">
+        <header className="bg-indigo-600 shadow-md">
           <div className="container mx-auto p-4 flex justify-between items-center">
-            {/* Add FontAwesome Icon */}
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-              <FontAwesomeIcon
-                icon={faCubes}
-                className="text-gray-800 mr-2"
-              />
-              Tumu/Foundation
-            </h1>
+            <Link href="/" className="flex items-center">
+              
+              <i className="fas fa-shopping-cart text-white text-3xl mr-2"></i>
+            </Link>
+            <nav className="flex items-center space-x-4">
+              <Link href="/products" className="flex items-center text-gray-600 hover:text-gray-900">
+                
+                <i className="fas fa-box text-gray-600 hover:text-gray-900 mr-1"></i>
+                Products
+              </Link>
+              <Link href="/login" className="flex items-center text-gray-600 hover:text-gray-900">
+                
+                <i className="fas fa-user text-gray-600 hover:text-gray-900 mr-1"></i>
+                Login
+              </Link>
+            </nav>
           </div>
         </header>
         <main className="container mx-auto flex-1 mt-8 p-4">{children}</main>
