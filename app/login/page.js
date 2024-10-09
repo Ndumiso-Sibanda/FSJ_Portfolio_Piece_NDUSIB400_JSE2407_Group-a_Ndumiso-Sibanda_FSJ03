@@ -1,26 +1,26 @@
-'use client'
+'use client';
 
-import  { useState } from 'react';
-import {useSignInWithEmailAndPassword} from 'react-firebase-hooks/auth'
-import {auth} from '@/app/firebase/firebase';
+import { useState } from 'react';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '@/app/firebase/firebase';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);4
-  const router = useRouter()
+  const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
+  const router = useRouter();
 
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
     try {
-    const res = await signInWithEmailAndPassword(email, password)
-    console.log ({res})
-    setEmail('');
-    setPassword('');
-    router.push('/products')
-    }catch (e) {
-    console.error(e)
+      const res = await signInWithEmailAndPassword(email, password);
+      console.log({ res });
+      setEmail('');
+      setPassword('');
+      router.push('/products'); // Redirect to products page after successful login
+    } catch (e) {
+      console.error('Error logging in:', e);
     }
   };
 
@@ -65,5 +65,6 @@ const Login = () => {
       </div>
     </div>
   );
-}
+};
+
 export default Login;
