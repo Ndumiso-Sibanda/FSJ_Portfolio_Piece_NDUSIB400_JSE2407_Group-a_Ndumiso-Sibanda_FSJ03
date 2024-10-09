@@ -15,8 +15,8 @@ export default function ProductDetail() {
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reviews, setReviews] = useState([]);
-  const [dateSortOption, setDateSortOption] = useState("");  
-  const [ratingSortOption, setRatingSortOption] = useState("");  
+  const [dateSortOption, setDateSortOption] = useState("");
+  const [ratingSortOption, setRatingSortOption] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -39,22 +39,19 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  
   const sortReviews = () => {
     let sortedReviews = [...reviews];
 
-    
     if (dateSortOption === "newest") {
-      sortedReviews.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+      sortedReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else if (dateSortOption === "oldest") {
-      sortedReviews.sort((a, b) => new Date(a.date) - new Date(b.date)); 
+      sortedReviews.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
-    
     if (ratingSortOption === "rating-high") {
-      sortedReviews.sort((a, b) => b.rating - a.rating); 
+      sortedReviews.sort((a, b) => b.rating - a.rating);
     } else if (ratingSortOption === "rating-low") {
-      sortedReviews.sort((a, b) => a.rating - b.rating); 
+      sortedReviews.sort((a, b) => a.rating - b.rating);
     }
 
     setReviews(sortedReviews);
@@ -62,7 +59,7 @@ export default function ProductDetail() {
 
   useEffect(() => {
     sortReviews();
-  }, [dateSortOption, ratingSortOption]); 
+  }, [dateSortOption, ratingSortOption]);
 
   if (loading) return <Spinner />;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -77,6 +74,10 @@ export default function ProductDetail() {
 
   const prevImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
+  const updateUrl = (searchQuery, selectedCategory, sortOrder, page) => {
+    router.push(`/products?search=${searchQuery || ''}&category=${selectedCategory || ''}&sortby=${sortOrder}&page=${page}`);
   };
 
   return (
@@ -115,20 +116,23 @@ export default function ProductDetail() {
             </div>
           )}
         </div>
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold mb-4">{product.title}</h2>
-          <p className="text-gray-700 mb-6">{product.description}</p>
-          <p className="text-lg font-semibold mb-6">Price: ${product.price}</p>
-          <p className="text-sm text-gray-600 mb-2">Category: {product.category}</p>
-          <p className="text-sm text-gray-600">Tags: {product.tags.join(", ")}</p>
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-4">{product.title}</h2>
+            <p className="text-gray-700 mb-6">{product.description}</p>
+            <p className="text-lg font-semibold mb-6">Price: ${product.price}</p>
+            <p className="text-sm text-gray-600 mb-2">Category: {product.category}</p>
+            <p className="text-sm text-gray-600">Tags: {product.tags.join(", ")}</p>
+          </div>
+
+          
+          <div className="h-24 bg-gray-200 mt-4"></div>
         </div>
       </div>
 
-     
       <div className="mt-8">
         <h3 className="text-2xl font-semibold mb-4">Reviews</h3>
 
-        
         <div className="mb-4">
           <label htmlFor="sort-date" className="mr-2">Sort by Date:</label>
           <select
@@ -143,7 +147,6 @@ export default function ProductDetail() {
           </select>
         </div>
 
-       
         <div className="mb-4">
           <label htmlFor="sort-rating" className="mr-2">Sort by Rating:</label>
           <select
@@ -164,12 +167,8 @@ export default function ProductDetail() {
               <div key={index} className="border p-4 rounded-md shadow-sm">
                 <p className="text-gray-800 font-semibold">{review.user}</p>
                 <p className="text-sm text-gray-600">{review.comment}</p>
-                <p className="text-sm text-yellow-500">
-                  Rating: {review.rating} / 5
-                </p>
-                <p className="text-sm text-gray-400">
-                  {new Date(review.date).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-yellow-500">Rating: {review.rating} / 5</p>
+                <p className="text-sm text-gray-400">{new Date(review.date).toLocaleDateString()}</p>
               </div>
             ))}
           </div>
