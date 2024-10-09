@@ -12,13 +12,13 @@ const Login = () => {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent the default form submission
+    e.preventDefault(); 
     try {
       const res = await signInWithEmailAndPassword(email, password);
       console.log({ res });
       setEmail('');
       setPassword('');
-      router.push('/products'); // Redirect to products page after successful login
+      router.push('/products'); 
     } catch (e) {
       console.error('Error logging in:', e);
     }
